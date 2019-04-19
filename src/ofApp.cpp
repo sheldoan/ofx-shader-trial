@@ -4,7 +4,9 @@
 void ofApp::setup(){
     panel.setup();
     panel.add(eyeScale.set("eyeScale", 2, 1, 10));
-    panel.add(eyeRadius.set("eyeRadius", 20, 10, 100));
+    panel.add(radiusScaleFactor.set("radiusScaleFactor", 0.3, 0, 5));
+    panel.add(useMask.set("useMask", false, false, true));
+    
     drawEyeShader.load("", "leftEyeShader.frag");
     
     //grabber.setup(1280,720);
@@ -21,7 +23,7 @@ void ofApp::setup(){
     videoFrameFbo.end();
     
     
-    videoPlayer.load("St Vincent 720p.mp4");
+    videoPlayer.load("joan of arc.mp4");
     videoPlayer.play();
 }
 
@@ -54,12 +56,13 @@ void ofApp::distortEyes() {
         }
         midRight /= (float)right.size();
         vector<ofPoint> eyePoints = { midLeft, midRight };
+        float distance = (midRight-midLeft).length();
         for (ofPoint eyePoint : eyePoints) {
             fbo.begin();
             ofClear(255);
             drawEyeShader.begin();
             drawEyeShader.setUniform1f("height", ofGetHeight());
-            drawEyeShader.setUniform1f("radius", eyeRadius);
+            drawEyeShader.setUniform1f("radius", distance * radiusScaleFactor);
             drawEyeShader.setUniform1f("scale", eyeScale);
             drawEyeShader.setUniform2f("eyePos", eyePoint.x, eyePoint.y);
             drawEyeShader.setUniformTexture("frame", videoPlayer.getTexture(), 0);
@@ -74,6 +77,10 @@ void ofApp::distortEyes() {
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofSetBackgroundColor(0);
+    fbo.begin();
+    ofClear(255);
+    fbo.end();
+    
     if (tracker.getInstances().size() > 0) {
         vector<ofPath> facePaths;
         for (ofxFaceTracker2Instance instance : tracker.getInstances()) {
@@ -94,7 +101,12 @@ void ofApp::draw(){
         }
         fbo.end();
     }
-    videoPlayer.draw(0, 0, ofGetWidth(), ofGetHeight());
+    if (useMask) {
+        videoPlayer.getTexture().setAlphaMask(fbo.getTexture());
+    } else {
+        videoPlayer.getTexture().disableAlphaMask();
+    }
+    videoPlayer.draw(0,0);
     distortEyes();
     //tracker.drawDebug();
     panel.draw();

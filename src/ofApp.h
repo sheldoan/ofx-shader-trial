@@ -27,7 +27,8 @@ class ofApp : public ofBaseApp{
     
     ofxPanel panel;
     ofParameter<float> eyeScale;
-    ofParameter<float> eyeRadius;
+    ofParameter<float> radiusScaleFactor;
+    ofParameter<bool> useMask;
     
     ofVideoPlayer videoPlayer;
     
