@@ -1,2 +1,3 @@
-*.xcodeproj/
-bin/*.app
+faceTracking.xcodeproj/
+bin/faceTracking.app/
+bin/faceTrackingDebug.app/

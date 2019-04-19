@@ -2,6 +2,9 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    panel.setup();
+    panel.add(eyeScale.set("eyeScale", 2, 1, 10));
+    panel.add(eyeRadius.set("eyeRadius", 20, 10, 100));
     drawEyeShader.load("", "leftEyeShader.frag");
     
     grabber.setup(1280,720);
@@ -26,7 +29,7 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-//    grabber.draw(0,0);
+    grabber.draw(0,0);
     if (tracker.getInstances().size() > 0) {
         ofPolyline left = tracker.getInstances()[0].getLandmarks().getImageFeature(ofxFaceTracker2Landmarks::LEFT_EYE);
         ofPoint midLeft;
@@ -42,35 +45,26 @@ void ofApp::draw(){
         }
         midRight /= (float)right.size();
     
-        fbo.begin();
-        ofClear(255);
-        drawEyeShader.begin();
-        drawEyeShader.setUniform1f("height", ofGetHeight());
-        drawEyeShader.setUniform1f("radius", 30);
-        drawEyeShader.setUniform1f("scale", 2);
-        drawEyeShader.setUniform2f("eyePos", midLeft.x, midLeft.y);
-        drawEyeShader.setUniformTexture("frame", grabber.getTexture(), 0);
-        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-        drawEyeShader.end();
-        fbo.end();
-        fbo.draw(0,0);
-        
-        fbo.begin();
-        ofClear(255);
-        drawEyeShader.begin();
-        drawEyeShader.setUniform1f("height", ofGetHeight());
-        drawEyeShader.setUniform1f("radius", 30);
-        drawEyeShader.setUniform1f("scale", 2);
-        drawEyeShader.setUniform2f("eyePos", midRight.x, midRight.y);
-        drawEyeShader.setUniformTexture("frame", grabber.getTexture(), 0);
-        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-        drawEyeShader.end();
-        fbo.end();
-        fbo.draw(0,0);
+        vector<ofPoint> eyePoints = { midLeft, midRight };
+        for (ofPoint eyePoint : eyePoints) {
+            fbo.begin();
+            ofClear(255);
+            drawEyeShader.begin();
+            drawEyeShader.setUniform1f("height", ofGetHeight());
+            drawEyeShader.setUniform1f("radius", eyeRadius);
+            drawEyeShader.setUniform1f("scale", eyeScale);
+            drawEyeShader.setUniform2f("eyePos", eyePoint.x, eyePoint.y);
+            drawEyeShader.setUniformTexture("frame", grabber.getTexture(), 0);
+            ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+            drawEyeShader.end();
+            fbo.end();
+            fbo.draw(0,0);
+        }
 //        ofSetColor(255);
 //        ofFill();
 //        ofDrawCircle(midLeft.x, midLeft.y, 30);
     }
+    panel.draw();
         //tracker.drawDebug();
     
 //    if (tracker.size() > 0){
