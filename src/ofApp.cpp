@@ -26,7 +26,7 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    grabber.draw(0,0);
+//    grabber.draw(0,0);
     if (tracker.getInstances().size() > 0) {
         ofPolyline left = tracker.getInstances()[0].getLandmarks().getImageFeature(ofxFaceTracker2Landmarks::LEFT_EYE);
         ofPoint midLeft;
@@ -46,23 +46,27 @@ void ofApp::draw(){
         ofClear(255);
         drawEyeShader.begin();
         drawEyeShader.setUniform1f("height", ofGetHeight());
+        drawEyeShader.setUniform1f("radius", 30);
+        drawEyeShader.setUniform1f("scale", 2);
         drawEyeShader.setUniform2f("eyePos", midLeft.x, midLeft.y);
         drawEyeShader.setUniformTexture("frame", grabber.getTexture(), 0);
         ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
         drawEyeShader.end();
         fbo.end();
-        fbo.draw(-midLeft.x, -midLeft.y, ofGetWidth()*2, ofGetHeight()*2);
+        fbo.draw(0,0);
         
         fbo.begin();
         ofClear(255);
         drawEyeShader.begin();
         drawEyeShader.setUniform1f("height", ofGetHeight());
+        drawEyeShader.setUniform1f("radius", 30);
+        drawEyeShader.setUniform1f("scale", 2);
         drawEyeShader.setUniform2f("eyePos", midRight.x, midRight.y);
         drawEyeShader.setUniformTexture("frame", grabber.getTexture(), 0);
         ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
         drawEyeShader.end();
         fbo.end();
-        fbo.draw(-midRight.x, -midRight.y, ofGetWidth()*2, ofGetHeight()*2);
+        fbo.draw(0,0);
 //        ofSetColor(255);
 //        ofFill();
 //        ofDrawCircle(midLeft.x, midLeft.y, 30);
