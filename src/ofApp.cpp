@@ -38,33 +38,36 @@ void ofApp::update(){
 }
 
 void ofApp::distortEyes() {
-    ofPolyline left = tracker.getInstances()[0].getLandmarks().getImageFeature(ofxFaceTracker2Landmarks::LEFT_EYE);
-    ofPoint midLeft;
-    for (int i = 0; i < left.size(); i++){
-        midLeft += left[i];
-    }
-    midLeft /= (float)left.size();
     
-    ofPolyline right = tracker.getInstances()[0].getLandmarks().getImageFeature(ofxFaceTracker2Landmarks::RIGHT_EYE);
-    ofPoint midRight;
-    for (int i = 0; i < right.size(); i++){
-        midRight += right[i];
-    }
-    midRight /= (float)right.size();
-    vector<ofPoint> eyePoints = { midLeft, midRight };
-    for (ofPoint eyePoint : eyePoints) {
-        fbo.begin();
-        ofClear(255);
-        drawEyeShader.begin();
-        drawEyeShader.setUniform1f("height", ofGetHeight());
-        drawEyeShader.setUniform1f("radius", eyeRadius);
-        drawEyeShader.setUniform1f("scale", eyeScale);
-        drawEyeShader.setUniform2f("eyePos", eyePoint.x, eyePoint.y);
-        drawEyeShader.setUniformTexture("frame", grabber.getTexture(), 0);
-        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-        drawEyeShader.end();
-        fbo.end();
-        fbo.draw(0,0);
+    for (ofxFaceTracker2Instance instance : tracker.getInstances()) {
+        ofPolyline left = instance.getLandmarks().getImageFeature(ofxFaceTracker2Landmarks::LEFT_EYE);
+        ofPoint midLeft;
+        for (int i = 0; i < left.size(); i++){
+            midLeft += left[i];
+        }
+        midLeft /= (float)left.size();
+        
+        ofPolyline right = instance.getLandmarks().getImageFeature(ofxFaceTracker2Landmarks::RIGHT_EYE);
+        ofPoint midRight;
+        for (int i = 0; i < right.size(); i++){
+            midRight += right[i];
+        }
+        midRight /= (float)right.size();
+        vector<ofPoint> eyePoints = { midLeft, midRight };
+        for (ofPoint eyePoint : eyePoints) {
+            fbo.begin();
+            ofClear(255);
+            drawEyeShader.begin();
+            drawEyeShader.setUniform1f("height", ofGetHeight());
+            drawEyeShader.setUniform1f("radius", eyeRadius);
+            drawEyeShader.setUniform1f("scale", eyeScale);
+            drawEyeShader.setUniform2f("eyePos", eyePoint.x, eyePoint.y);
+            drawEyeShader.setUniformTexture("frame", videoPlayer.getTexture(), 0);
+            ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+            drawEyeShader.end();
+            fbo.end();
+            fbo.draw(0,0);
+        }
     }
 }
 
@@ -90,15 +93,10 @@ void ofApp::draw(){
             facePath.draw();
         }
         fbo.end();
-        
-        videoFrameFbo.begin();
-        ofClear(255);
-        videoPlayer.draw(0, 0, ofGetWidth(), ofGetHeight());
-        videoFrameFbo.end();
-    videoFrameFbo.getTexture().setAlphaMask(fbo.getTexture());
-        videoFrameFbo.draw(0, 0);
-        //distortEyes();
     }
+    videoPlayer.draw(0, 0, ofGetWidth(), ofGetHeight());
+    distortEyes();
+    //tracker.drawDebug();
     panel.draw();
         //tracker.drawDebug();
     
