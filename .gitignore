@@ -1,3 +1,5 @@
 faceTracking.xcodeproj/
 bin/faceTracking.app/
 bin/faceTrackingDebug.app/
+.DS_Store
+bin/.DS_Store

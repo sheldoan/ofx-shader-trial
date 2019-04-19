@@ -7,23 +7,33 @@ void ofApp::setup(){
     panel.add(eyeRadius.set("eyeRadius", 20, 10, 100));
     drawEyeShader.load("", "leftEyeShader.frag");
     
-    grabber.setup(1280,720);
+    //grabber.setup(1280,720);
     tracker.setup();
     
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     fbo.begin();
     ofClear(255);
     fbo.end();
+    
+    videoFrameFbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+    videoFrameFbo.begin();
+    ofClear(255);
+    videoFrameFbo.end();
+    
+    
+    videoPlayer.load("St Vincent 720p.mp4");
+    videoPlayer.play();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    videoPlayer.update();
     drawEyeShader.load("", "leftEyeShader.frag");
-    grabber.update();
+    //grabber.update();
     
     // Update tracker when there are new frames
-    if(grabber.isFrameNew()){
-        tracker.update(grabber);
+    if(videoPlayer.isFrameNew()){
+        tracker.update(videoPlayer);
     }
 }
 
@@ -62,23 +72,32 @@ void ofApp::distortEyes() {
 void ofApp::draw(){
     ofSetBackgroundColor(0);
     if (tracker.getInstances().size() > 0) {
-        ofPolyline face = tracker.getInstances()[0].getLandmarks().getImageFeature(ofxFaceTracker2Landmarks::FACE_OUTLINE);
-        ofPath facePath;
-        facePath.moveTo(face[0]);
-        for (int i = 1; i < face.size(); i++) {
-            facePath.lineTo(face[i]);
+        vector<ofPath> facePaths;
+        for (ofxFaceTracker2Instance instance : tracker.getInstances()) {
+            ofPolyline face = instance.getLandmarks().getImageFeature(ofxFaceTracker2Landmarks::FACE_OUTLINE);
+            ofPath facePath;
+            facePath.moveTo(face[0]);
+            for (int i = 1; i < face.size(); i++) {
+                facePath.lineTo(face[i]);
+            }
+            facePath.setFilled(true);
+            facePaths.push_back(facePath);
         }
-        facePath.setFilled(true);
         
         fbo.begin();
         ofClear(255);
-        facePath.draw();
+        for (ofPath facePath : facePaths) {
+            facePath.draw();
+        }
         fbo.end();
         
-        grabber.getTexture().setAlphaMask(fbo.getTexture());
-        grabber.draw(0,0);
-    
-        distortEyes();
+        videoFrameFbo.begin();
+        ofClear(255);
+        videoPlayer.draw(0, 0, ofGetWidth(), ofGetHeight());
+        videoFrameFbo.end();
+    videoFrameFbo.getTexture().setAlphaMask(fbo.getTexture());
+        videoFrameFbo.draw(0, 0);
+        //distortEyes();
     }
     panel.draw();
         //tracker.drawDebug();

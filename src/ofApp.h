@@ -34,5 +34,6 @@ class ofApp : public ofBaseApp{
     ofxFaceTracker2 tracker;
     ofVideoGrabber grabber;
     ofFbo fbo;
+    ofFbo videoFrameFbo;
     ofShader drawEyeShader;
 };
